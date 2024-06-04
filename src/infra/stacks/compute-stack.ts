@@ -4,6 +4,7 @@ import { Construct } from 'constructs';
 import { execSync } from 'child_process';
 
 import path = require('path');
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export class ComputeStack extends Stack {
   public readonly textSummarizationLambda: Function;
@@ -45,10 +46,17 @@ export class ComputeStack extends Stack {
       ),
       memorySize: 1024,
       functionName: 'demoTextSummarization',
-      timeout: Duration.seconds(10),
+      timeout: Duration.seconds(120),
       description:
         'Text Summarization for Manufacturing Industry using API Gateway, S3 and Cohere Foundation Model',
     });
+
+    // Allow the Lambda to access Amazon Bedrock APIs
+    lambdaFunc.addToRolePolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: ['bedrock:*'],
+      resources: ['*'],
+    }));
 
     return lambdaFunc;
   }
