@@ -12,7 +12,7 @@ export class ComputeStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    this.createTextSummarizationLambda(props);
+    this.textSummarizationLambda = this.createTextSummarizationLambda(props);
   }
 
   createTextSummarizationLambda(props?: StackProps) {
