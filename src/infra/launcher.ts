@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { AwsGenerativeAiExamplesStack } from '../src/stacks/aws-generative-ai-examples-stack';
+import { AwsGenerativeAiExamplesStack } from '../stacks/aws-generative-ai-examples-stack';
 
 const app = new cdk.App();
 new AwsGenerativeAiExamplesStack(app, 'AwsGenerativeAiExamplesStack', {
