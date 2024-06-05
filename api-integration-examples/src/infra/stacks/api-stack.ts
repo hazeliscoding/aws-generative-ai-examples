@@ -36,6 +36,12 @@ export class ApiStack extends Stack {
       },
     });
 
+    this.integrateTextSummarizationApi(props, api);
+
+    return api;
+  }
+
+  private integrateTextSummarizationApi(props: ApiStackProps, api: RestApi) {
     const methodResponse: MethodResponse = {
       statusCode: '200',
       responseModels: { 'application/json': Model.EMPTY_MODEL },
@@ -67,8 +73,6 @@ export class ApiStack extends Stack {
     textSummarization.addMethod('POST', textSummarizationIntegration, {
       methodResponses: [methodResponse],
     });
-
-    return api;
   }
 
   private output() {
