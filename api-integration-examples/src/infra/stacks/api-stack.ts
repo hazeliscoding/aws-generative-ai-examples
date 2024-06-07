@@ -1,15 +1,5 @@
 import { Construct } from 'constructs';
-import {
-  ContentHandling,
-  IntegrationResponse,
-  LambdaIntegration,
-  MethodResponse,
-  Model,
-  PassthroughBehavior,
-  RestApi,
-  UsagePlan,
-} from 'aws-cdk-lib/aws-apigateway';
-
+import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
 
@@ -24,6 +14,7 @@ export class ApiStack extends Stack {
     super(scope, id, props);
 
     this.api = this.createApi(props);
+    this.output();
   }
 
   private createApi(props: ApiStackProps) {
@@ -42,37 +33,16 @@ export class ApiStack extends Stack {
   }
 
   private integrateTextSummarizationApi(props: ApiStackProps, api: RestApi) {
-    const methodResponse: MethodResponse = {
-      statusCode: '200',
-      responseModels: { 'application/json': Model.EMPTY_MODEL },
-    };
-
-    const integrationResponse: IntegrationResponse = {
-      statusCode: '200',
-      contentHandling: ContentHandling.CONVERT_TO_TEXT,
-    };
-
-    const requestTemplate = {
-      prompt: "$input.path('$.prompt')",
-    };
-
     const textSummarizationIntegration = new LambdaIntegration(
       props.textSummarizationLambda,
       {
         allowTestInvoke: true,
         proxy: false,
-        integrationResponses: [integrationResponse],
-        passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-        requestTemplates: {
-          'application/json': JSON.stringify(requestTemplate),
-        },
       }
     );
 
     const textSummarization = api.root.addResource('text-summarization');
-    textSummarization.addMethod('POST', textSummarizationIntegration, {
-      methodResponses: [methodResponse],
-    });
+    textSummarization.addMethod('POST', textSummarizationIntegration);
   }
 
   private output() {
