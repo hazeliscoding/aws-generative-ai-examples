@@ -5,6 +5,7 @@ import { IFunction } from 'aws-cdk-lib/aws-lambda';
 
 interface ApiStackProps extends StackProps {
   textSummarizationLambda: IFunction;
+  imageGenerationLambda: IFunction;
 }
 
 export class ApiStack extends Stack {
@@ -28,21 +29,27 @@ export class ApiStack extends Stack {
     });
 
     this.integrateTextSummarizationApi(props, api);
+    this.integrateImageGenerationApi(props, api);
 
     return api;
   }
 
   private integrateTextSummarizationApi(props: ApiStackProps, api: RestApi) {
     const textSummarizationIntegration = new LambdaIntegration(
-      props.textSummarizationLambda,
-      {
-        allowTestInvoke: true,
-        proxy: false,
-      }
+      props.textSummarizationLambda
     );
 
     const textSummarization = api.root.addResource('text-summarization');
     textSummarization.addMethod('POST', textSummarizationIntegration);
+  }
+
+  private integrateImageGenerationApi(props: ApiStackProps, api: RestApi) {
+    const imageGenerationIntegration = new LambdaIntegration(
+      props.imageGenerationLambda
+    );
+
+    const imageGeneration = api.root.addResource('image-generation');
+    imageGeneration.addMethod('POST', imageGenerationIntegration);
   }
 
   private output() {

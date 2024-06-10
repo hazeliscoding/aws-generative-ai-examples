@@ -6,6 +6,7 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 // Path module is required to resolve paths to Lambda function code.
 import path = require('path');
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 /**
  * Defines a new CDK stack for hosting AWS Lambda functions.
@@ -13,6 +14,7 @@ import path = require('path');
 export class ComputeStack extends Stack {
   // Publicly accessible reference to the text summarization Lambda function.
   public readonly textSummarizationLambda: NodejsFunction;
+  public readonly imageGenerationLambda: NodejsFunction;
 
   /**
    * Constructs a new instance of the ComputeStack class.
@@ -25,6 +27,9 @@ export class ComputeStack extends Stack {
 
     // Initialize the Lambda function for text summarization and assign it to a class variable.
     this.textSummarizationLambda = this.createTextSummarizationLambda();
+
+    // Initialize the Lambda function for image generation and assign it to a class variable.
+    this.imageGenerationLambda = this.createImageGenerationLambda();
   }
 
   /**
@@ -50,6 +55,41 @@ export class ComputeStack extends Stack {
         resources: ['*'], // The resources upon which the action can be performed.
       })
     );
+
+    // Return the configured Lambda function.
+    return lambdaFunc;
+  }
+
+  /**
+   * Creates a Lambda function for image generation.
+   * @returns {NodejsFunction} - The configured Node.js Lambda function.
+   */
+  private createImageGenerationLambda() {
+    // Create an S3 bucket to store the generated images.
+    const imagesBucket = new Bucket(this, 'GeneratedImagesBucket')
+
+    // Create a new Node.js-based Lambda function.
+    const lambdaFunc = new NodejsFunction(this, 'ImageGenerationLambda', {
+      runtime: Runtime.NODEJS_20_X, // Specifies the runtime environment for the Lambda function.
+      handler: 'handler', // The name of the function (within your code) that Lambda calls to start execution.
+      entry: path.join(__dirname, '../../services/image.ts'), // The path to the entry file containing the Lambda handler function.
+      memorySize: 1024, // The amount of memory allocated to the function.
+      timeout: Duration.seconds(120), // The maximum amount of time that the function can run before it is terminated.
+      functionName: 'createGeneratedImageLambda', // The name of the Lambda function.
+      environment: {
+        BUCKET_NAME: imagesBucket.bucketName
+      }
+    });
+
+    // Grant the Lambda function read and write access to the S3 bucket.
+    imagesBucket.grantReadWrite(lambdaFunc)
+
+    // Attach a policy to the Lambda function's role allowing it to invoke the Bedrock model.
+    lambdaFunc.addToRolePolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      resources: ['*'],
+      actions: ['bedrock:InvokeModel']
+    }))
 
     // Return the configured Lambda function.
     return lambdaFunc;

@@ -8,4 +8,5 @@ const app = new cdk.App();
 const computeStack = new ComputeStack(app, 'GenAI-Examples-ComputeStack');
 const apiStack = new ApiStack(app, 'GenAI-Examples-ApiStack', {
   textSummarizationLambda: computeStack.textSummarizationLambda,
+  imageGenerationLambda: computeStack.imageGenerationLambda,
 });
